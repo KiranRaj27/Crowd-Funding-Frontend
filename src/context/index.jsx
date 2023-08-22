@@ -14,30 +14,24 @@ const StateContext = createContext();
 
 export const StateContextProvider = ({ children }) => {
   const { contract } = useContract(
-    "0x3502Ff447Eb72366eC0E21C8Fc5F3d9906833E77",
+    "0x44A4CBB6595c979E4b6fD28A46800507EeEEc0F6",
     crowdabi
   );
-  const { mutateAsync: createCampaign } = useContractWrite(
-    contract,
-    "createCampaign"
-  );
-
+ 
   const address = useAddress();
   const connect = useMetamask();
 
   const publishCampaign = async (form) => {
     try {
-      const data = await createCampaign({
-        args: [
-          address,
-          form.title,
-          form.description,
-          form.target,
-          new Date(form.deadline).getTime(),
-          form.image,
-        ],
-      });
-
+      const data =await contract.call(
+        "createCampaign",
+        address,
+        form.title,
+        form.description,
+        form.target,
+        new Date(form.deadline).getTime(),
+        form.image
+      );
       console.log("contract call success", data);
     } catch (error) {
       console.log("contract call failure", error);
