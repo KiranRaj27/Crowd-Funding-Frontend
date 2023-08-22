@@ -5,6 +5,9 @@ import {
   useContract,
   useMetamask,
   useContractWrite,
+  useNetwork,
+  ChainId,
+  useNetworkMismatch,
 } from "@thirdweb-dev/react";
 import { ethers } from "ethers";
 import { EditionMetadataWithOwnerOutputSchema } from "@thirdweb-dev/sdk";
@@ -17,24 +20,44 @@ export const StateContextProvider = ({ children }) => {
     "0xF5Af9b2eD533cA51B11244bbE816A0909367E11D",
     crowdabi
   );
- 
+
+  const isMismatched = useNetworkMismatch();
   const address = useAddress();
   const connect = useMetamask();
+  const [, switchNetwork] = useNetwork();
 
   const publishCampaign = async (form) => {
-    try {
-      const data =await contract.call(
-        "createCampaign",
-        address,
-        form.title,
-        form.description,
-        form.target,
-        new Date(form.deadline).getTime(),
-        form.image
-      );
-      console.log("contract call success", data);
-    } catch (error) {
-      console.log("contract call failure", error);
+    if (isMismatched) {
+      await switchNetwork(ChainId.Mumbai);
+      try {
+        const data = await contract.call(
+          "createCampaign",
+          address,
+          form.title,
+          form.description,
+          form.target,
+          new Date(form.deadline).getTime(),
+          form.image
+        );
+        console.log("contract call success", data);
+      } catch (error) {
+        console.log("contract call failure", error);
+      }
+    } else {
+      try {
+        const data = await contract.call(
+          "createCampaign",
+          address,
+          form.title,
+          form.description,
+          form.target,
+          new Date(form.deadline).getTime(),
+          form.image
+        );
+        console.log("contract call success", data);
+      } catch (error) {
+        console.log("contract call failure", error);
+      }
     }
   };
 
